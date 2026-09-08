@@ -11,9 +11,10 @@ import MetricsPanel from "./components/MetricsPanel";
 import LogsPanel from "./components/LogsPanel";
 import TopIdeasPanel from "./components/TopIdeasPanel";
 import NewsFeedPanel from "./components/NewsFeedPanel";
-import ThreeBackground from "./components/ThreeBackground";
 import LoginPage from "./components/LoginPage";
-import GuidePanel from "./components/GuidePanel";
+import Watchlist from "./components/Watchlist";
+import IpoResearch from "./components/IpoResearch";
+import LearnPanel from "./components/LearnPanel";
 import { useMarketStream } from "./hooks/useMarketStream";
 import { useSessionState } from "./hooks/useSessionState";
 
@@ -22,6 +23,7 @@ export default function App() {
   const session = useSessionState(state);
   const selectedSymbol = session.selectedSymbol;
   const [entered, setEntered] = useState(() => window.sessionStorage.getItem("tradepulse.entered") === "1");
+  const [activeView, setActiveView] = useState<"watchlist" | "ipo" | "simulator" | "learn">("watchlist");
 
   const handleEnter = () => {
     window.sessionStorage.setItem("tradepulse.entered", "1");
@@ -33,28 +35,33 @@ export default function App() {
     setEntered(false);
   };
 
+  const openSimulator = async (symbol?: string) => {
+    if (symbol) await session.setSelectedSymbol(symbol);
+    setActiveView("simulator");
+  };
+
   return (
     <div className="app-shell">
-      <ThreeBackground />
       {!entered ? (
         <LoginPage onEnter={handleEnter} />
       ) : (
         <>
-          <Header connected={connected} state={state} session={session} onLogout={handleLogout} />
+          <Header connected={connected} state={state} activeView={activeView} onChangeView={setActiveView} onLogout={handleLogout} />
           {!connected && (
             <section className="connection-banner" role="status">
               <strong>Backend not connected.</strong>
-              <span>Start the backend in another terminal, then refresh this page. The dashboard will load sample market data automatically.</span>
+              <span>Waiting for the market service. Please refresh in a few seconds.</span>
             </section>
           )}
-          <GuidePanel
-            connected={connected}
-            marketRunning={Boolean(state?.session.market_running)}
-            selectedSymbol={selectedSymbol}
-            hasIdeas={Boolean(state?.signals.length)}
-            onStart={() => session.startMarket(1)}
-          />
-          <main className="dashboard-grid">
+          {activeView === "watchlist" && <Watchlist ideas={state?.signals ?? []} market={state?.market ?? {}} onSimulate={openSimulator} onRefresh={session.refreshNews} />}
+          {activeView === "ipo" && <IpoResearch articles={state?.news ?? []} />}
+          {activeView === "learn" && <LearnPanel onOpenSimulator={() => openSimulator()} />}
+          {activeView === "simulator" && <>
+          <section className="simulator-intro">
+            <div><p className="eyebrow">PAPER-TRADING WORKSPACE</p><h2>Test a strategy without real money.</h2><p>Start the replay, select a stock, then observe simulated orders, fills, P&amp;L, and risk controls.</p></div>
+            <div className="simulator-actions"><button onClick={() => session.startMarket(1)}>Start replay</button><button className="muted" onClick={() => session.stopMarket()}>Pause</button><button className="muted" onClick={() => session.resetMarket()}>Reset</button><button className="warn" onClick={() => session.injectVolatility()}>Test volatility</button></div>
+          </section>
+          <main className="dashboard-grid simulator-grid">
             <section className="panel span-4">
               <MarketWatch
                 market={state?.market ?? {}}
@@ -97,6 +104,7 @@ export default function App() {
               <LogsPanel logs={state?.logs ?? []} />
             </section>
           </main>
+          </>}
         </>
       )}
     </div>
