@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 
@@ -23,6 +23,14 @@ class SymbolRequest(BaseModel):
 @router.get("/state")
 async def get_state(request: Request):
     return services(request).simulator.dashboard_state()
+
+
+@router.get("/ipo/current")
+async def get_current_ipos(request: Request):
+    try:
+        return await services(request).ipo.current_issues()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=503, detail="Official NSE IPO data is temporarily unavailable") from exc
 
 
 @router.post("/start")

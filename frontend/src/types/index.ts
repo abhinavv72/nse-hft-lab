@@ -156,6 +156,21 @@ export interface SignalIdea {
   timestamp: string;
 }
 
+export interface IpoIssue {
+  company_name: string;
+  symbol: string;
+  series: string;
+  status: string;
+  open_date: string | null;
+  close_date: string | null;
+  price_band: string;
+  issue_size_shares: string | number | null;
+  subscription_times: number | null;
+  shares_bid: string | number | null;
+  shares_offered: string | number | null;
+  official_url: string;
+}
+
 export interface SessionState {
   session_id: string;
   mode: "live" | "replay" | "paused";

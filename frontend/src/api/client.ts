@@ -16,6 +16,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   getState: () => request("/api/market/state"),
+  getCurrentIpos: () => request<{ source: string; cached: boolean; issues: import("../types").IpoIssue[] }>("/api/market/ipo/current"),
   startMarket: (speed: number, mode = "live") => request("/api/market/start", { method: "POST", body: JSON.stringify({ speed, mode }) }),
   stopMarket: () => request("/api/market/stop", { method: "POST" }),
   resetMarket: () => request("/api/market/reset", { method: "POST" }),

@@ -24,6 +24,7 @@ from app.core.event_bus import EventBus
 from app.services.event_classifier_service import EventClassifierService
 from app.services.ai_sentiment_service import AiSentimentService
 from app.services.live_price_service import LivePriceService
+from app.services.ipo_service import IpoService
 from app.services.market_data_service import MarketDataService
 from app.services.metrics_service import MetricsService
 from app.services.news_ingestion_service import NewsIngestionService
@@ -51,6 +52,7 @@ def build_services() -> ServiceContainer:
     event_bus = EventBus()
     store = LocalAnalyticsStore(config.db_path)
     market_data = MarketDataService(config.data_dir, config.market_symbols, config.deterministic_seed)
+    ipo = IpoService()
     live_prices = LivePriceService(config.symbol_yfinance_map, config.live_prices_enabled)
     engine = MatchingEngineAdapter(config.engine_executable, config.engine_fallback_executable)
     persistence = PersistenceService(store, config.export_dir)
@@ -93,6 +95,7 @@ def build_services() -> ServiceContainer:
         event_bus=event_bus,
         store=store,
         market_data=market_data,
+        ipo=ipo,
         live_prices=live_prices,
         engine=engine,
         persistence=persistence,

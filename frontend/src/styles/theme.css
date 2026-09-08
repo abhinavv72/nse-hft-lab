@@ -658,6 +658,17 @@ select {
 .ipo-checklist p { margin: 0; }
 .ipo-news { margin-top: 1rem; }
 .ipo-news a { color: #8dc5ff; font-size: 0.85rem; }
+.ipo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.ipo-card { padding: 1rem; background: #101e31; border: 1px solid var(--line); border-radius: 0.9rem; }
+.ipo-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; margin: 0.85rem 0; }
+.ipo-facts div, .scenario-grid > div { padding: 0.65rem; background: #172940; border-radius: 0.65rem; }
+.ipo-facts small, .scenario-grid small { display: block; color: var(--muted); font-size: 0.72rem; }
+.ipo-facts b { display: block; margin-top: 0.25rem; font-size: 0.84rem; }
+.button-link { display: inline-flex; justify-content: center; align-items: center; padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: 0.75rem; color: var(--text); text-decoration: none; font-weight: 500; }
+.ipo-scenario { margin-top: 1rem; padding: 1.1rem; background: #102238; border: 1px solid #3b6794; border-radius: 0.9rem; }
+.scenario-grid { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; align-items: end; }
+.scenario-grid label { color: var(--muted); font-size: 0.82rem; }
+.scenario-grid strong { display: block; margin-top: 0.3rem; }
 .learn-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .learn-grid article { min-height: 12rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: #101e31; }
 .learn-grid h3 { margin: 0.75rem 0 0.45rem; }
@@ -679,7 +690,7 @@ select {
   .guide-steps { grid-template-columns: 1fr; }
   .span-3, .span-4, .span-5, .span-7 { grid-column: span 12; }
   .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .watchlist-grid, .ipo-checklist, .learn-grid { grid-template-columns: 1fr; }
+  .watchlist-grid, .ipo-checklist, .learn-grid, .ipo-grid, .scenario-grid { grid-template-columns: 1fr; }
   .watchlist-tools, .detail-grid, .detail-grid.three { grid-template-columns: 1fr; }
   .research-notice, .ipo-warning, .simulator-intro { flex-direction: column; }
   .research-notice strong, .ipo-warning strong { white-space: normal; }
