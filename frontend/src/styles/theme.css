@@ -153,7 +153,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -197,6 +198,16 @@ input {
   border-radius: 0.7rem;
   border: 1px solid var(--line);
   background: rgba(6, 17, 28, 0.95);
+  color: var(--text);
+}
+
+select {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--line);
+  background: #0c1726;
   color: var(--text);
 }
 
@@ -609,6 +620,36 @@ input {
 .reason-block p, .risk-block p { margin: 0.3rem 0 0; line-height: 1.45; font-size: 0.84rem; }
 .risk-block { color: #f3cf9b; }
 .simulate-button { width: 100%; margin-top: 0.45rem; background: #2165a4; border-color: #4e95d7; }
+.card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-top: 0.45rem; }
+.simulate-button { margin-top: 0; }
+.watchlist-tools { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(12rem, 0.65fr) auto; gap: 0.85rem; align-items: end; margin: 1rem 0; padding: 0.9rem 1rem; background: #101e31; border: 1px solid var(--line); border-radius: 0.8rem; }
+.watchlist-tools label { color: var(--muted); font-size: 0.8rem; }
+.watchlist-tools span { color: var(--muted); font-size: 0.82rem; padding-bottom: 0.65rem; }
+.stock-detail { margin-top: 1.25rem; padding: 1.2rem; background: #0f1d30; border: 1px solid #3c6591; border-radius: 1rem; box-shadow: 0 14px 30px rgba(0,0,0,0.22); scroll-margin-top: 1rem; }
+.detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+.detail-heading h2 { margin: 0.2rem 0; }
+.detail-heading .bias { display: inline-block; vertical-align: middle; margin-left: 0.45rem; }
+.detail-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 1rem; margin-top: 1rem; }
+.detail-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.detail-grid.three article, .setup-score, .price-trail, .detail-news { padding: 1rem; background: #14263b; border: 1px solid var(--line); border-radius: 0.8rem; }
+.detail-grid h3, .detail-news h3 { margin: 0 0 0.6rem; font-size: 0.95rem; }
+.detail-grid p, .detail-grid li { color: var(--muted); line-height: 1.5; font-size: 0.86rem; }
+.detail-grid ul { margin: 0; padding-left: 1.1rem; }
+.chart-topline { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.85rem; }
+.price-trail svg { width: 100%; height: 10rem; margin: 0.5rem 0; overflow: visible; }
+.price-trail line { stroke: #2a4562; stroke-width: 0.5; }
+.price-trail polyline { fill: none; stroke: #4ea5f5; stroke-width: 2.3; vector-effect: non-scaling-stroke; }
+.price-trail text { fill: var(--muted); font-size: 8px; }
+.price-trail small { color: var(--muted); font-size: 0.7rem; }
+.setup-score strong { display: block; margin: 0.35rem 0; font-size: 2.7rem; color: #a8d6ff; }
+.setup-score em { font-size: 0.9rem; font-style: normal; color: var(--muted); }
+.score-bar { height: 0.55rem; background: #0a1421; border-radius: 999px; overflow: hidden; }
+.score-bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2a79be, #5fc999); }
+.detail-news { margin-top: 1rem; }
+.news-evidence { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 1rem; padding: 0.75rem 0; border-top: 1px solid var(--line); }
+.news-evidence:first-of-type { border-top: 0; }
+.news-evidence span { color: var(--muted); font-size: 0.78rem; }
+.news-evidence a { grid-row: span 2; align-self: center; color: #8dc5ff; font-size: 0.82rem; }
 .ipo-checklist, .learn-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin: 1rem 0; }
 .ipo-checklist { grid-template-columns: 1fr 1fr 1fr; background: #101e31; border: 1px solid var(--line); border-radius: 1rem; padding: 1rem; }
 .ipo-checklist h3 { grid-column: 1 / -1; margin: 0; }
@@ -639,9 +680,11 @@ input {
   .span-3, .span-4, .span-5, .span-7 { grid-column: span 12; }
   .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .watchlist-grid, .ipo-checklist, .learn-grid { grid-template-columns: 1fr; }
+  .watchlist-tools, .detail-grid, .detail-grid.three { grid-template-columns: 1fr; }
   .research-notice, .ipo-warning, .simulator-intro { flex-direction: column; }
   .research-notice strong, .ipo-warning strong { white-space: normal; }
   .simulator-actions { justify-content: flex-start; }
+  .news-evidence { grid-template-columns: 1fr; }
 }
 
 /* ---- scene-* kept for backward compat but no longer rendered ---- */

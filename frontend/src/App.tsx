@@ -19,7 +19,7 @@ import { useMarketStream } from "./hooks/useMarketStream";
 import { useSessionState } from "./hooks/useSessionState";
 
 export default function App() {
-  const { state, connected } = useMarketStream();
+  const { state, connected, history } = useMarketStream();
   const session = useSessionState(state);
   const selectedSymbol = session.selectedSymbol;
   const [entered, setEntered] = useState(() => window.sessionStorage.getItem("tradepulse.entered") === "1");
@@ -53,7 +53,7 @@ export default function App() {
               <span>Waiting for the market service. Please refresh in a few seconds.</span>
             </section>
           )}
-          {activeView === "watchlist" && <Watchlist ideas={state?.signals ?? []} market={state?.market ?? {}} onSimulate={openSimulator} onRefresh={session.refreshNews} />}
+          {activeView === "watchlist" && <Watchlist ideas={state?.signals ?? []} market={state?.market ?? {}} history={history} articles={state?.news ?? []} onSimulate={openSimulator} onRefresh={session.refreshNews} />}
           {activeView === "ipo" && <IpoResearch articles={state?.news ?? []} />}
           {activeView === "learn" && <LearnPanel onOpenSimulator={() => openSimulator()} />}
           {activeView === "simulator" && <>

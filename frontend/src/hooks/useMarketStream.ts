@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from "react";
 
 import { api } from "../api/client";
 import { connectDashboard } from "../api/ws";
-import type { DashboardState } from "../types";
+import type { DashboardState, MarketTick } from "../types";
+
+export type MarketHistory = Record<string, MarketTick[]>;
 
 export function useMarketStream() {
   const [state, setState] = useState<DashboardState | null>(null);
   const [connected, setConnected] = useState(false);
+  const [history, setHistory] = useState<MarketHistory>({});
   const lastUpdateAt = useRef(0);
 
   useEffect(() => {
@@ -30,12 +33,20 @@ export function useMarketStream() {
       (payload) => {
         const message = payload as { type?: string; data?: DashboardState };
         if (message.type === "dashboard" && message.data) {
+          const dashboard = message.data;
           socketConnected = true;
           // A full dashboard re-render is expensive. The UI only needs a smooth
           // snapshot a few times a second, not every engine event.
           if (Date.now() - lastUpdateAt.current > 400) {
             lastUpdateAt.current = Date.now();
-            setState(message.data);
+            setState(dashboard);
+            setHistory((current) => {
+              const next = { ...current };
+              for (const [symbol, tick] of Object.entries(dashboard.market)) {
+                next[symbol] = [...(current[symbol] ?? []), tick].slice(-48);
+              }
+              return next;
+            });
           }
           setConnected(true);
         }
@@ -60,5 +71,5 @@ export function useMarketStream() {
     };
   }, []);
 
-  return { state, connected };
+  return { state, connected, history };
 }
