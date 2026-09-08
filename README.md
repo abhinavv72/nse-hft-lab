@@ -2,6 +2,10 @@
 
 Local-first HFT-style trading simulator for Indian markets with a C++ matching engine, FastAPI control plane, SQLite persistence, and a live React dashboard.
 
+> **Educational simulation only.** This project does not connect to a broker, execute real orders, or provide investment advice. Market depth and execution are simulated; live price and news sources can be unavailable or delayed.
+
+News is ranked by deterministic rules by default. Optionally set `NSE_HFT_AI_HF_TOKEN` to a user-owned Hugging Face Inference Providers token to use the open-source `ProsusAI/finbert` financial-sentiment model; articles visibly identify whether FinBERT or the rules fallback produced the analysis.
+
 ## What It Does
 
 - Replays bundled NSE-style seed data for `NIFTY`, `BANKNIFTY`, `RELIANCE`, `TCS`, `INFY`, and `SBIN`
@@ -103,6 +107,12 @@ cd C:\Users\KIIT\OneDrive\Desktop\projects\nse-hft-lab
 ```powershell
 docker compose up --build
 ```
+
+## Public Demo Deployment
+
+The production Docker image builds the React app and serves it through FastAPI, so the dashboard, REST API, and WebSocket share one HTTPS origin. This avoids public CORS and WebSocket URL configuration issues.
+
+For a free portfolio demo, deploy `backend/Dockerfile` as a Docker web service with the repository root as the build context and `/health` as its health-check path. Free hosts use temporary storage, so sessions and local SQLite data reset after a restart; this is expected for demo mode.
 
 ## API Overview
 

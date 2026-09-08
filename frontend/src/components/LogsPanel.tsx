@@ -12,6 +12,7 @@ export default function LogsPanel({ logs }: LogsPanelProps) {
         <span>{logs.length} events</span>
       </div>
       <div className="stack tight">
+        {logs.length === 0 && <p className="empty-state">System activity will be recorded here once the simulation starts.</p>}
         {logs.slice(0, 16).map((log, index) => (
           <div className="log-row" key={`${log.timestamp}-${index}`}>
             <span>{log.timestamp.split("T")[1]?.replace("Z", "")}</span>

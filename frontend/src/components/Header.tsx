@@ -12,19 +12,24 @@ interface HeaderProps {
     exportSession: () => Promise<void>;
     startReplay: (sessionId: string, speed: number) => Promise<void>;
   };
+  onLogout: () => void;
 }
 
-export default function Header({ connected, state, session }: HeaderProps) {
+export default function Header({ connected, state, session, onLogout }: HeaderProps) {
   const latestReplay = session.replaySessions[0];
 
   return (
-    <header className="header">
-      <div>
+    <header className="header glass-header">
+      <div className="header-brand">
         <p className="eyebrow">LOCAL-FIRST HFT LAB</p>
         <h1>NSE-HFT-Lab</h1>
-        <p className="subtle">
-          Session {state?.session.session_id ?? "booting"} • {state?.session.mode ?? "live"} • {connected ? "ws connected" : "ws offline"}
-        </p>
+        <div className="status-bar">
+          <span className={`status-indicator ${connected ? "online" : "offline"}`}></span>
+          <p className="subtle">
+            Session {state?.session.session_id ?? "booting"} • {state?.session.mode ?? "live"} • {connected ? "Connected" : "Offline"}
+          </p>
+        </div>
+        <p className="simulation-notice">Educational simulation only — not investment advice or broker execution.</p>
       </div>
       <div className="header-controls">
         <button onClick={() => session.startMarket(1)}>Start 1x</button>
@@ -35,6 +40,7 @@ export default function Header({ connected, state, session }: HeaderProps) {
         <button className="warn" onClick={() => session.injectVolatility()}>Vol Spike</button>
         <button className="muted" onClick={() => session.exportSession()}>Export</button>
         <button disabled={!latestReplay} onClick={() => latestReplay && session.startReplay(latestReplay, 5)}>Replay Latest</button>
+        <button className="muted" onClick={onLogout}>Logout</button>
       </div>
     </header>
   );

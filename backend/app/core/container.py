@@ -6,6 +6,7 @@ from app.adapters.duckdb_adapter import LocalAnalyticsStore
 from app.adapters.matching_engine_adapter import MatchingEngineAdapter
 from app.core.event_bus import EventBus
 from app.services.market_data_service import MarketDataService
+from app.services.live_price_service import LivePriceService
 from app.services.metrics_service import MetricsService
 from app.services.news_ingestion_service import NewsIngestionService
 from app.services.order_gateway import OrderGateway
@@ -23,6 +24,7 @@ class ServiceContainer:
     event_bus: EventBus
     store: LocalAnalyticsStore
     market_data: MarketDataService
+    live_prices: LivePriceService
     engine: MatchingEngineAdapter
     persistence: PersistenceService
     metrics: MetricsService

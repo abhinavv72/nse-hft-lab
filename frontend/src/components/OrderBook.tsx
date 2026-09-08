@@ -32,6 +32,7 @@ export default function OrderBook({ symbol, book }: OrderBookProps) {
           ))}
         </div>
       </div>
+      {!book && <p className="empty-state">Choose a stock after starting the simulator to view its bid and ask levels.</p>}
     </div>
   );
 }

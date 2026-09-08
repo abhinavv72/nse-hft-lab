@@ -23,6 +23,7 @@ export default function TopIdeasPanel({ ideas, onRefresh }: TopIdeasPanelProps) 
         <button className="muted" onClick={() => onRefresh()}>Refresh News</button>
       </div>
       <div className="stack">
+        {ranked.length === 0 && <p className="empty-state">No ranked ideas yet. Start the simulator, then refresh news to generate explainable research signals.</p>}
         {ranked.map((idea) => (
           <div className="idea-card" key={idea.signal_id}>
             <div className="row">

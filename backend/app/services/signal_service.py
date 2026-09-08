@@ -32,7 +32,7 @@ class SignalService:
             score *= 0.9
         return score, reasons, risks
 
-    def recompute(self, latest_ticks: dict[str, dict], articles: list[NewsArticle]) -> list[SignalIdea]:
+    def recompute(self, latest_ticks: dict[str, dict], articles: list[NewsArticle], live_prices: dict[str, dict] | None = None) -> list[SignalIdea]:
         articles_by_symbol: dict[str, list[NewsArticle]] = defaultdict(list)
         scores: dict[str, float] = defaultdict(float)
         reasons_map: dict[str, list[str]] = defaultdict(list)
@@ -52,7 +52,8 @@ class SignalService:
         ideas: list[SignalIdea] = []
         for symbol in self.symbols:
             score = scores[symbol]
-            market_score, market_reasons, market_risks = self._market_adjustment(latest_ticks.get(symbol, {}))
+            tick = (live_prices or {}).get(symbol) or latest_ticks.get(symbol, {})
+            market_score, market_reasons, market_risks = self._market_adjustment(tick)
             score += market_score
             reasons = reasons_map[symbol][:3] + market_reasons[:2]
             risks = list(dict.fromkeys(risks_map[symbol] + market_risks))
@@ -64,7 +65,6 @@ class SignalService:
                 bias = "neutral"
                 if not reasons:
                     reasons = ["insufficient directional confirmation"]
-            tick = latest_ticks.get(symbol)
             last_price = tick["last_price"] if tick else None
             change_pct = round(((tick["last_price"] - tick["open"]) / tick["open"]) * 100, 2) if tick and tick["open"] else None
             confidence = min(95.0, max(20.0, 42.0 + abs(score) * 6.5))

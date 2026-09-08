@@ -156,6 +156,7 @@ class NewsArticle(BaseModel):
     sentiment: str = "neutral"
     impact_score: float = 0.0
     tags: list[str] = Field(default_factory=list)
+    analysis_source: str = "rules"
 
 
 class SignalIdea(BaseModel):

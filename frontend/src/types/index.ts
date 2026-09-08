@@ -138,6 +138,7 @@ export interface NewsArticle {
   sentiment: "positive" | "negative" | "neutral";
   impact_score: number;
   tags: string[];
+  analysis_source: "rules" | "finbert";
 }
 
 export interface SignalIdea {

@@ -1,4 +1,5 @@
 .venv/
+backend/.env
 backend/runtime/
 backend/.pytest_cache/
 frontend/node_modules/

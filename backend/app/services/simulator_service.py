@@ -6,7 +6,8 @@ from collections import deque
 
 from app.core.clock import utc_now_iso
 from app.core.enums import SessionMode
-from app.core.models import DashboardState, LogEvent, SessionState
+from app.core.models import DashboardState, LogEvent, MarketTick, SessionState
+from app.services.live_price_service import LivePriceService
 from app.services.market_data_service import MarketDataService
 from app.services.metrics_service import MetricsService
 from app.services.news_ingestion_service import NewsIngestionService
@@ -23,6 +24,7 @@ class SimulatorService:
     def __init__(
         self,
         market_data: MarketDataService,
+        live_prices: LivePriceService,
         gateway: OrderGateway,
         strategy: StrategyService,
         risk: RiskService,
@@ -35,6 +37,7 @@ class SimulatorService:
         seed: int,
     ) -> None:
         self.market_data = market_data
+        self.live_prices = live_prices
         self.gateway = gateway
         self.strategy = strategy
         self.risk = risk
@@ -57,6 +60,7 @@ class SimulatorService:
             deterministic_seed=seed,
         )
         self._task: asyncio.Task | None = None
+        self._live_refresh_task: asyncio.Task | None = None
         self._replay_rows: dict[str, list[dict]] | None = None
         self._volatility_multiplier = 1.0
 
@@ -72,6 +76,8 @@ class SimulatorService:
         self._log("INFO", "market", "market started", {"mode": mode, "speed": speed, "replay_session_id": replay_session_id})
         if self._task is None or self._task.done():
             self._task = asyncio.create_task(self._run_loop())
+        if self._live_refresh_task is None or self._live_refresh_task.done():
+            self._live_refresh_task = asyncio.create_task(self._live_price_loop())
         return self.session
 
     async def stop_market(self) -> SessionState:
@@ -116,6 +122,29 @@ class SimulatorService:
     def _log(self, level: str, category: str, message: str, data: dict) -> None:
         self.logs.appendleft(LogEvent(timestamp=utc_now_iso(), level=level, category=category, message=message, data=data))
 
+    def _overlay_live(self, tick: MarketTick) -> MarketTick:
+        live = self.live_prices.get(tick.symbol)
+        if not live:
+            return tick
+        return tick.model_copy(update={
+            "last_price": live["last_price"],
+            "mid_price": live["last_price"],
+            "open": live.get("open", tick.open),
+            "high": max(tick.high, live.get("high", tick.high)),
+            "low": min(tick.low, live.get("low", tick.low)),
+            "volume": live.get("volume", tick.volume) or tick.volume,
+            "volatility": live.get("volatility", tick.volatility),
+            "spread": max(live["last_price"] * 0.0004, 0.05),
+        })
+
+    async def prime_market_watch(self) -> None:
+        await self.live_prices.refresh()
+        for symbol in self.market_data.symbols:
+            tick = self._overlay_live(self.market_data.peek_tick(symbol))
+            self.latest_ticks[symbol] = tick.model_dump()
+            self.portfolio.mark_market(symbol, tick.last_price)
+        await self.refresh_signals()
+
     async def refresh_news(self) -> list:
         added = await self.news.refresh()
         for article in added:
@@ -126,8 +155,18 @@ class SimulatorService:
         return added
 
     async def refresh_signals(self) -> None:
-        signals = self.signals.recompute(self.latest_ticks, self.news.latest())
+        signals = self.signals.recompute(self.latest_ticks, self.news.latest(), self.live_prices.latest())
         await self.persistence.replace_signals(self.session.session_id, signals)
+
+    async def _live_price_loop(self) -> None:
+        """Background task: refresh live prices every 60 s, independent of the tick loop."""
+        while True:
+            try:
+                await self.live_prices.refresh()
+                self._log("INFO", "market", "live prices refreshed", {"symbols": list(self.live_prices.latest().keys())})
+            except Exception as exc:  # noqa: BLE001
+                self._log("WARN", "market", "live price refresh failed", {"error": str(exc)})
+            await asyncio.sleep(60)
 
     async def _run_loop(self) -> None:
         while True:
@@ -137,7 +176,8 @@ class SimulatorService:
 
             for symbol in self.market_data.symbols:
                 rows = self._replay_rows.get(symbol) if self._replay_rows else None
-                tick = self.market_data.next_tick(symbol, source_rows=rows)
+                tick = self._overlay_live(self.market_data.next_tick(symbol, source_rows=rows))
+
                 self.latest_ticks[symbol] = tick.model_dump()
                 self.metrics.mark_event()
                 self.risk.update_market_timestamp(symbol)

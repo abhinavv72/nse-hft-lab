@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.adapters.duckdb_adapter import LocalAnalyticsStore
 from app.adapters.matching_engine_adapter import MatchingEngineAdapter
@@ -20,6 +22,8 @@ from app.config import get_config
 from app.core.container import ServiceContainer
 from app.core.event_bus import EventBus
 from app.services.event_classifier_service import EventClassifierService
+from app.services.ai_sentiment_service import AiSentimentService
+from app.services.live_price_service import LivePriceService
 from app.services.market_data_service import MarketDataService
 from app.services.metrics_service import MetricsService
 from app.services.news_ingestion_service import NewsIngestionService
@@ -47,12 +51,14 @@ def build_services() -> ServiceContainer:
     event_bus = EventBus()
     store = LocalAnalyticsStore(config.db_path)
     market_data = MarketDataService(config.data_dir, config.market_symbols, config.deterministic_seed)
+    live_prices = LivePriceService(config.symbol_yfinance_map, config.live_prices_enabled)
     engine = MatchingEngineAdapter(config.engine_executable, config.engine_fallback_executable)
     persistence = PersistenceService(store, config.export_dir)
     metrics = MetricsService()
     mapper = SymbolMapperService()
     classifier = EventClassifierService()
     sentiment = SentimentService()
+    ai_sentiment = AiSentimentService(config.ai_hf_token, config.ai_model, config.ai_timeout_seconds)
     news = NewsIngestionService(
         config.news_seed_path,
         mapper,
@@ -61,6 +67,7 @@ def build_services() -> ServiceContainer:
         config.news_feeds,
         config.max_news_articles,
         config.live_news_enabled,
+        ai_sentiment,
     )
     signals = SignalService(config.market_symbols)
     portfolio = PortfolioService(config.market_symbols)
@@ -70,6 +77,7 @@ def build_services() -> ServiceContainer:
     replay = ReplayService(persistence)
     simulator = SimulatorService(
         market_data,
+        live_prices,
         gateway,
         strategy,
         risk,
@@ -85,6 +93,7 @@ def build_services() -> ServiceContainer:
         event_bus=event_bus,
         store=store,
         market_data=market_data,
+        live_prices=live_prices,
         engine=engine,
         persistence=persistence,
         metrics=metrics,
@@ -118,6 +127,7 @@ async def lifespan(app: FastAPI):
     services = build_services()
     await services.engine.start()
     app.state.services = services
+    await services.simulator.prime_market_watch()
     await services.simulator.refresh_news()
     broadcast_task = asyncio.create_task(broadcast_loop(app))
     news_refresh_task = asyncio.create_task(news_refresh_loop(app))
@@ -166,3 +176,10 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             await websocket.receive_text()
     except WebSocketDisconnect:
         await ws_manager.disconnect(websocket)
+
+
+# The directory is present in the production Docker image, while local
+# development continues to use Vite on port 5173.
+frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if frontend_dist.exists():
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")

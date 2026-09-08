@@ -9,16 +9,44 @@ export function useMarketStream() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    api.getState().then((snapshot) => setState(snapshot as DashboardState)).catch(() => undefined);
-    const socket = connectDashboard((payload) => {
-      const message = payload as { type?: string; data?: DashboardState };
-      if (message.type === "dashboard" && message.data) {
-        setState(message.data);
-        setConnected(true);
+    let cancelled = false;
+
+    const loadState = async () => {
+      try {
+        const snapshot = await api.getState();
+        if (!cancelled) {
+          setState(snapshot as DashboardState);
+        }
+      } catch {
+        // keep last known state
       }
-    });
-    socket.onclose = () => setConnected(false);
-    return () => socket.close();
+    };
+
+    loadState();
+
+    const handle = connectDashboard(
+      (payload) => {
+        const message = payload as { type?: string; data?: DashboardState };
+        if (message.type === "dashboard" && message.data) {
+          setState(message.data);
+          setConnected(true);
+        }
+      },
+      () => setConnected(false),
+    );
+
+    const poll = window.setInterval(() => {
+      if (!connected) {
+        loadState();
+      }
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(poll);
+      setConnected(false);
+      handle.close();
+    };
   }, []);
 
   return { state, connected };

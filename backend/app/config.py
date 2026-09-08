@@ -15,21 +15,11 @@ class AppConfig(BaseSettings):
     news_seed_path: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[2] / "data" / "news_sample.csv")
     db_path: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "runtime" / "lab.db")
     export_dir: Path = Field(default_factory=lambda: Path(__file__).resolve().parents[1] / "runtime" / "exports")
-    engine_executable: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parents[2]
-        / "engine"
-        / "build"
-        / "Release"
-        / "nse_matching_engine.exe"
-    )
-    engine_fallback_executable: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parents[2]
-        / "engine"
-        / "build"
-        / "nse_matching_engine.exe"
-    )
+    engine_executable: Path = Field(default_factory=lambda: _engine_binary_path())
+    engine_fallback_executable: Path = Field(default_factory=lambda: _engine_binary_path())
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     ws_broadcast_ms: int = 250
+    live_price_refresh_seconds: int = 15
     deterministic_seed: int = 42
     max_order_qty: int = 500
     max_position_per_symbol: int = 2500
@@ -44,10 +34,32 @@ class AppConfig(BaseSettings):
     news_refresh_seconds: int = 300
     max_news_articles: int = 30
     live_news_enabled: bool = True
+    live_prices_enabled: bool = True
+    ai_hf_token: str = ""
+    ai_model: str = "ProsusAI/finbert"
+    ai_timeout_seconds: float = 12.0
     news_feeds: list[str] = [
         "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",
         "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     ]
+    symbol_yfinance_map: dict[str, str] = {
+        "NIFTY": "^NSEI",
+        "BANKNIFTY": "^NSEBANK",
+        "RELIANCE": "RELIANCE.NS",
+        "TCS": "TCS.NS",
+        "INFY": "INFY.NS",
+        "SBIN": "SBIN.NS",
+    }
+
+
+def _engine_binary_path() -> Path:
+    root = Path(__file__).resolve().parents[2]
+    candidates = [
+        root / "engine" / "build" / "Release" / "nse_matching_engine.exe",
+        root / "engine" / "build" / "nse_matching_engine.exe",
+        root / "engine" / "build" / "nse_matching_engine",
+    ]
+    return next((path for path in candidates if path.exists()), candidates[0])
 
 
 @lru_cache(maxsize=1)

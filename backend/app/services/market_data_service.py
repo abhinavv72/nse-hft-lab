@@ -45,7 +45,16 @@ class MarketDataService:
             raise ValueError(f"No market data found for {symbol}")
         index = self.indices[symbol] % len(rows)
         self.indices[symbol] += 1
-        row = rows[index]
+        return self._build_tick(rows[index])
+
+    def peek_tick(self, symbol: str, source_rows: list[dict[str, str]] | None = None) -> MarketTick:
+        rows = source_rows or self.rows_by_symbol[symbol]
+        if not rows:
+            raise ValueError(f"No market data found for {symbol}")
+        index = self.indices[symbol] % len(rows)
+        return self._build_tick(rows[index])
+
+    def _build_tick(self, row: dict[str, str]) -> MarketTick:
         close_price = float(row["close"])
         high_price = float(row["high"])
         low_price = float(row["low"])

@@ -20,6 +20,7 @@ export default function MarketWatch({ market, selectedSymbol, onSelectSymbol }: 
           <span>Spread</span>
           <span>Vol Proxy</span>
         </div>
+        {Object.keys(market).length === 0 && <p className="empty-state">No market data yet. Start the simulator to load NSE sample prices.</p>}
         {Object.values(market).map((tick) => (
           <button
             key={tick.symbol}
