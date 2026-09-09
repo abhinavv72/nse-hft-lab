@@ -177,6 +177,19 @@ export interface IpoIssue {
   registrar: string | null;
 }
 
+export interface NseQuote {
+  symbol: string;
+  last_price: number;
+  open: number;
+  high: number;
+  low: number;
+  prev_close: number;
+  volume: number;
+  volatility: number;
+  source: string;
+  market_status: string;
+}
+
 export interface SessionState {
   session_id: string;
   mode: "live" | "replay" | "paused";

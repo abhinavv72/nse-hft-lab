@@ -625,6 +625,11 @@ select {
 .watchlist-tools { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(12rem, 0.65fr) auto; gap: 0.85rem; align-items: end; margin: 1rem 0; padding: 0.9rem 1rem; background: #101e31; border: 1px solid var(--line); border-radius: 0.8rem; }
 .watchlist-tools label { color: var(--muted); font-size: 0.8rem; }
 .watchlist-tools span { color: var(--muted); font-size: 0.82rem; padding-bottom: 0.65rem; }
+.universal-search, .universal-quote { border: 1px solid var(--line); border-radius: 1rem; background: #101e31; padding: 1.1rem; margin: 1rem 0; }
+.universal-search h2 { margin: 0.2rem 0; }
+.search-row { display: flex; gap: 0.65rem; margin-top: 1rem; }
+.search-row input { flex: 1; min-width: 0; }
+.universal-quote { margin-bottom: 1.5rem; }
 .stock-detail { margin-top: 1.25rem; padding: 1.2rem; background: #0f1d30; border: 1px solid #3c6591; border-radius: 1rem; box-shadow: 0 14px 30px rgba(0,0,0,0.22); scroll-margin-top: 1rem; }
 .detail-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
 .detail-heading h2 { margin: 0.2rem 0; }
@@ -692,6 +697,7 @@ select {
   .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .watchlist-grid, .ipo-checklist, .learn-grid, .ipo-grid, .scenario-grid { grid-template-columns: 1fr; }
   .watchlist-tools, .detail-grid, .detail-grid.three { grid-template-columns: 1fr; }
+  .search-row { flex-direction: column; }
   .research-notice, .ipo-warning, .simulator-intro { flex-direction: column; }
   .research-notice strong, .ipo-warning strong { white-space: normal; }
   .simulator-actions { justify-content: flex-start; }

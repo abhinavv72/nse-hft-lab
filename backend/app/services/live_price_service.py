@@ -3,7 +3,10 @@ from __future__ import annotations
 import asyncio
 import importlib
 import logging
+import re
+from datetime import datetime, time
 from collections.abc import Mapping
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +58,35 @@ class LivePriceService:
 
     def get(self, symbol: str) -> dict | None:
         return self._latest.get(symbol)
+
+    async def lookup_nse(self, symbol: str) -> dict | None:
+        """Look up an NSE equity outside the fixed simulator basket."""
+        clean = symbol.strip().upper().replace(".NS", "")
+        if not re.fullmatch(r"[A-Z0-9&-]{1,30}", clean):
+            return None
+        cached = self._latest.get(clean)
+        if cached:
+            return {**cached, "symbol": clean, "market_status": self.market_status()}
+        yf = self._client()
+        if not yf:
+            return None
+        result = await asyncio.to_thread(self._fetch_one, yf, f"{clean}.NS")
+        if not result:
+            return None
+        async with self._lock:
+            self._latest[clean] = result
+        return {**result, "symbol": clean, "market_status": self.market_status()}
+
+    @staticmethod
+    def market_status() -> str:
+        now = datetime.now(ZoneInfo("Asia/Kolkata"))
+        if now.weekday() >= 5:
+            return "Market closed — weekend"
+        if time(9, 15) <= now.time() <= time(15, 30):
+            return "NSE market open"
+        if now.time() < time(9, 15):
+            return "Market closed — opens 9:15 AM IST"
+        return "Market closed — last available price"
 
     @staticmethod
     def _fetch_one(yf, ticker_symbol: str) -> dict | None:

@@ -33,6 +33,14 @@ async def get_current_ipos(request: Request):
         raise HTTPException(status_code=503, detail="Official NSE IPO data is temporarily unavailable") from exc
 
 
+@router.get("/quote")
+async def lookup_quote(symbol: str, request: Request):
+    quote = await services(request).live_prices.lookup_nse(symbol)
+    if not quote:
+        raise HTTPException(status_code=404, detail="NSE symbol not found or quote is temporarily unavailable")
+    return quote
+
+
 @router.post("/start")
 async def start_market(payload: MarketStartRequest, request: Request):
     return await services(request).simulator.start_market(speed=payload.speed, mode=payload.mode)
