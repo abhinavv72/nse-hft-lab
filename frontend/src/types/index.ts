@@ -169,6 +169,12 @@ export interface IpoIssue {
   shares_bid: string | number | null;
   shares_offered: string | number | null;
   official_url: string;
+  lot_size: number | null;
+  gmp: number | null;
+  gmp_updated_at: string | null;
+  gmp_source: string | null;
+  retail_subscription: string | number | null;
+  registrar: string | null;
 }
 
 export interface SessionState {

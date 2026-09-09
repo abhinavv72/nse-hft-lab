@@ -38,6 +38,8 @@ class AppConfig(BaseSettings):
     ai_hf_token: str = ""
     ai_model: str = "ProsusAI/finbert"
     ai_timeout_seconds: float = 12.0
+    # Optional free IPO Guru key. Keep this server-side; never expose it to the browser.
+    ipo_guru_api_key: str = ""
     news_feeds: list[str] = [
         "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",
         "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",

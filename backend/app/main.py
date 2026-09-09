@@ -52,7 +52,7 @@ def build_services() -> ServiceContainer:
     event_bus = EventBus()
     store = LocalAnalyticsStore(config.db_path)
     market_data = MarketDataService(config.data_dir, config.market_symbols, config.deterministic_seed)
-    ipo = IpoService()
+    ipo = IpoService(api_key=config.ipo_guru_api_key)
     live_prices = LivePriceService(config.symbol_yfinance_map, config.live_prices_enabled)
     engine = MatchingEngineAdapter(config.engine_executable, config.engine_fallback_executable)
     persistence = PersistenceService(store, config.export_dir)
